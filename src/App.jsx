@@ -24,36 +24,78 @@ function App() {
 
  /*  // 1 этап, подключ к html через id или как уже это описать в React  */
  // фильтровка list
-  const [searchName, setSearchName] = useState(''); 
-  const [searchAge, setSearchAge] = useState('');
-  const [selectGender, setSelectGender] = useState('');
+  const [searchNameValue, setSearchNameValue] = useState('');  // value везде чтобы они сразу обращались к 
+  const [searchAgeValue, setSearchAgeValue] = useState('');
+  const [selectGenderValue, setSelectGenderValue] = useState('');
 /*   const [resultForm, setResultForm] = useState(''); */
   const [createForm, setCreateForm] = useState(''); // создание
   const [deleteButton, setDeleteButton] = useState(''); // удаление
-
-  function searchAll() {
-    const nameValue = searchName.toLowerCase().trim();
-    const ageValue = Number(searchAge);
-    const genderValue = selectGender.toLowerCase();
-
-    filtered = secondFiltered.filter(person => {
-        const matchName = !nameValue || person.userName.toLowerCase().includes(nameValue);
-        const matchAge = !ageValue || person.userAge == ageValue;
-        const matchGender = !genderValue || person.userGender.toLowerCase() == genderValue;
-        return matchName && matchAge && matchGender;
-    });
-
-    viewPoint();
-
-    console.log(secondFiltered);
-};
-searchAll();
-
-  
+  // форма добавления 
+  const [addNameValue, setAddNameValue] = useState('');
+  const [addAgeValue, setAddAgeValue] = useState('');
+  const [addGenderValue, setAddGenderValue] = useState('male');
+  const [showForm, setShowForm] = useState(false)
 
 
 
 
+
+  const handleSearch = () => {
+const secondFiltered = list.filter(person => {
+    const matchName = !searchNameValue || person.userName.toLowerCase().includes(searchNameValue.toLocaleLowerCase().trim());
+    const matchAge = !searchAgeValue || person.userAge == Number(searchAgeValue);
+    const matchGender = !selectGenderValue || person.userGender == selectGenderValue;
+    return matchName && matchAge && matchGender;
+});
+
+setFiltered(secondFiltered);
+}
+
+const handleAddPerson = (e) => {
+    e.preventDefault() // preventDefault не перезагружает страницу отмен стандартн поведение
+
+    if (!addNameValue || !addAgeValue) return
+
+    const newPerson = {
+        userName: addNameValue,
+        userAge: addAgeValue,
+        userGender: addGenderValue
+    }
+    setList([...list, newPerson]) // добавл в список
+
+    // очищение формы
+    setAddNameValue('')
+    setAddAgeValue('')
+    setAddGenderValue('male')
+
+    //скрывает форму __зачем?__
+    setShowForm(false) 
+
+    handleSearch() // обновляет список
+}
+
+const handleDelete = (index) => { // удаление 
+    const newList = list.filter((_, i) => i !== index) // _,  что это блядь
+    setList(newList)
+    handleSearch()
+}
+
+const handleEdit = (index) => {
+    let newName = promt("Новое имя:", list[index].useName)
+    let newAge = promt("Новый возраст:", list[index].userAge)
+    let newGender = prompt("Новый пол", list[index].userGender)
+
+    if (!newName || !newAge || !newGender) return
+
+    const updated = [...list]
+    updated[index]  = {
+        userName: newName,
+        userAge: Number(newAge),
+        userGender: newGender
+    }
+    setList(updated)
+    handleSearch()
+}
 
 
 
@@ -71,8 +113,20 @@ searchAll();
       <div id="create-add" className="create hidden flex-col w-[800px] m-auto mb-[20px] p-[15px] font-medium opacity rounded-r-lg border border-#008a77-400 drop-shadow-xl"  > {/* <!-- bg-[#a5c8e3] --> */}
           <form className="inpt-form" id="create-form">
               <div className="grid grid-cols-6 grid-rows-1 mb-[10px]" >
-                  <input type="text" name="add-name" placeholder="ФИО"  className="add-name col-span-5 text-center border border-#008a77-400 rounded-full p-1  hover:bg-[#cfcfcf] transition duration-300 ease-in-out" id="add-name" />
-                  <input type="number" name="add-age" placeholder="Возраст" className="add-age border border-navy-600 text-center rounded-full p-1  hover:bg-[#cfcfcf] transition duration-300 ease-in-out ml-5" id="add-age" />
+                  <input
+                    type="text"
+                    name="add-name"
+                    placeholder="ФИО"
+                    className="add-name col-span-5 text-center border border-#008a77-400 rounded-full p-1  hover:bg-[#cfcfcf] transition duration-300 ease-in-out"
+                    id="add-name"
+                     />
+                  <input
+                    type="number"
+                    name="add-age"
+                    placeholder="Возраст"
+                    className="add-age border border-navy-600 text-center rounded-full p-1  hover:bg-[#cfcfcf] transition duration-300 ease-in-out ml-5"
+                    id="add-age"
+                    />
               </div>
               <div className="inpt-select mb-[10px]">
                   <label htmlFor="form-gender" className="ml-[5px]">Пол</label>
@@ -89,8 +143,28 @@ searchAll();
       </div>
       <div className="menu-list flex flex-col w-[800px] m-auto"> {/* <!-- -violet bg-[#9789e2] --> */}
           <div className="grid grid-cols-6 gap-1 mb-[15px]">
-              <input type="text" id="search-name" placeholder="Поиск по имени" className="col-span-5 border hover:bg-[#cfcfcf] rounded-sm  transition duration-300 ease-in-out p-[3px]" />
-              <input type="number" id="search-age" placeholder="По возрасту" className="border hover:bg-[#cfcfcf] rounded-sm  transition duration-300 ease-in-out  p-[3px]" />
+              <input
+               type="text"
+               id="search-name"
+               placeholder="Поиск по имени"
+               className="col-span-5 border hover:bg-[#cfcfcf] rounded-sm  transition duration-300 ease-in-out p-[3px]"
+               value={searchNameValue}
+               onChange={(e) => {
+                   setSearchNameValue(e.target.value)
+                   handleSearch()
+               }}
+               />
+              <input
+               type="number"
+               id="search-age"
+               placeholder="По возрасту"
+               className="border hover:bg-[#cfcfcf] rounded-sm  transition duration-300 ease-in-out  p-[3px]"
+               value={searchAgeValue}
+               onChange={(e) => { /* onChange сбытие инпута остальное функция REACT e объект события */
+                   setSearchAgeValue(e.target.value)
+                   handleSearch()
+               }}
+               />
           </div>
           <div className="flex justify-between mb-[10px]">
               <div className="">
@@ -112,26 +186,26 @@ searchAll();
         <div id="result_card" className="list flex  justify-around"> {/* <!-- bg-[#dbdbf6] border-violet-200 --> */}
             <div id="result_text" className="grid grid-cols-3 gap-4">
                 {filtered.map((person, index) => (
-                    <div class="mb-[10px] p-[10px] border rounded-r-lg hover:bg-[#e0e0e0]  transition duration-300 ease-in-out shadow-md"  id="result-card-daddy">
-                    <div class="flex flex-row mt-[5px]" id="result-card-skin">
-                        <div id="result-skin-chkbox" class="flex flex-col-reverse justify-between mr-[10px] ml-[10px]">
-                            <input type="checkbox" id="result-chbbox" class="delete-select mb-10 accent-[#8981d9]" value="${index}" />
+                    <div className="mb-[10px] p-[10px] border rounded-r-lg hover:bg-[#e0e0e0]  transition duration-300 ease-in-out shadow-md"  id="result-card-daddy">
+                    <div className="flex flex-row mt-[5px]" id="result-card-skin">
+                        <div id="result-skin-chkbox" className="flex flex-col-reverse justify-between mr-[10px] ml-[10px]">
+                            <input type="checkbox" id="result-chbbox" className="delete-select mb-10 accent-[#8981d9]" value="${index}" />
                         </div>
-                        <div id="result-skin-data" class="flex flex-col mb-[10px]">
-                            <p class="font-medium text-gray-950 dark:text-gray">
+                        <div id="result-skin-data" className="flex flex-col mb-[10px]">
+                            <p className="font-medium text-gray-950 dark:text-gray">
                                 {person.userName}</p>
-                            <p class="text-gray-700 dark:text-gray-400">
+                            <p className="text-gray-700 dark:text-gray-400">
                                 возраст - {person.userAge} 
                             </p>
-                            <p class=" font-style: italic">
+                            <p className=" font-style: italic">
                                 {person.userGender} 
                             </p> 
                         </div> 
                         <span  id="result" /> 
                     </div>
-                    <div class="flex flex-row  mb-[10px]">
-                        <button class="rounded-full border p-1.5 w-25 bg-white hover:bg-[#8981d9] transition duration-300 ease-in-out ml-5 mr-5 w-30" onclick="editList(${index})">Редактировать</button>
-                        <button class="rounded-full border p-1.5 w-25 bg-[#FCEBEB] hover:bg-[#f2caca] text-red-400 transition duration-300 ease-in-ou" onclick="deleteList(${index})">Удалить</button>
+                    <div className="flex flex-row  mb-[10px]">
+                        <button className="rounded-full border p-1.5 w-25 bg-white hover:bg-[#8981d9] transition duration-300 ease-in-out ml-5 mr-5 w-30" onclick="editList(${index})">Редактировать</button>
+                        <button className="rounded-full border p-1.5 w-25 bg-[#FCEBEB] hover:bg-[#f2caca] text-red-400 transition duration-300 ease-in-ou" onclick="deleteList(${index})">Удалить</button>
                     </div>
                     </div>
                 ))}
