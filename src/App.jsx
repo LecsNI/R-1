@@ -19,7 +19,6 @@ function App() {
 
   // Это у нас
   const [filtered, setFiltered] = useState ([...list]); // это у нас для осн массива
-  const [secondFiltered, setSecondFiltered] = useState ([...filtered]); // это у нас для иммутабельности
 
 
  /*  // 1 этап, подключ к html через id или как уже это описать в React  */
@@ -34,69 +33,105 @@ function App() {
   const [addNameValue, setAddNameValue] = useState('');
   const [addAgeValue, setAddAgeValue] = useState('');
   const [addGenderValue, setAddGenderValue] = useState('male');
-  const [showForm, setShowForm] = useState(false)
+  const [showForm, setShowForm] = useState(false);
 
+  const [checkIncludes, setCheckIncludes] = useState([]);
+// чекбоксы и поиск не работают
 
-
-
-
+/* 
   const handleSearch = () => {
-const secondFiltered = list.filter(person => {
-    const matchName = !searchNameValue || person.userName.toLowerCase().includes(searchNameValue.toLocaleLowerCase().trim());
-    const matchAge = !searchAgeValue || person.userAge == Number(searchAgeValue);
-    const matchGender = !selectGenderValue || person.userGender == selectGenderValue;
-    return matchName && matchAge && matchGender;
-});
+    const secondFiltered = list.filter(person => {
+        const matchName = !searchNameValue || person.userName.toLowerCase().includes(searchNameValue.toLowerCase().trim());
+        const matchAge = !searchAgeValue || person.userAge == Number(searchAgeValue);
+        const matchGender = !selectGenderValue || person.userGender == selectGenderValue;
+        return matchName && matchAge && matchGender;
+    });
 
-setFiltered(secondFiltered);
+    setFiltered(secondFiltered);
+} */
+
+const secondFiltered = (dataToFilter, nameValue = searchNameValue, ageValue = searchAgeValue, genderValue = selectGenderValue ) => {
+    return dataToFilter.filter(person => {
+        const matchName = !nameValue || person.userName.toLowerCase().includes(nameValue.toLowerCase().trim());
+        const matchAge = !ageValue || person.userAge == Number(ageValue);
+        const matchGender = !genderValue || person.userGender == genderValue;
+        return matchName && matchAge && matchGender;
+    });
+}
+
+const handleSearch = (nameValue = searchNameValue, ageValue = searchAgeValue, genderValue = selectGenderValue) => {
+    setFiltered(secondFiltered(list, nameValue, ageValue, genderValue));
 }
 
 const handleAddPerson = (e) => {
-    e.preventDefault() // preventDefault не перезагружает страницу отмен стандартн поведение
+    e.preventDefault(); // preventDefault не перезагружает страницу отмен стандартн поведение
 
-    if (!addNameValue || !addAgeValue) return
+    if (!addNameValue || !addAgeValue) return; // не добавляется если пусто
 
     const newPerson = {
         userName: addNameValue,
-        userAge: addAgeValue,
+        userAge: Number (addAgeValue),
         userGender: addGenderValue
-    }
-    setList([...list, newPerson]) // добавл в список
+    };
+    const newList = [...list, newPerson]; // добавл в список
+    setList(newList);
+    setFiltered(secondFiltered(newList));
 
     // очищение формы
-    setAddNameValue('')
-    setAddAgeValue('')
-    setAddGenderValue('male')
+    setAddNameValue('');
+    setAddAgeValue('');
+    setAddGenderValue('male');
 
-    //скрывает форму __зачем?__
-    setShowForm(false) 
-
-    handleSearch() // обновляет список
+    //после
+    setShowForm(false); 
 }
 
 const handleDelete = (index) => { // удаление 
-    const newList = list.filter((_, i) => i !== index) // _,  что это блядь
-    setList(newList)
-    handleSearch()
+    const newList = list.filter((_, i) => i !== index); // _,  что это блядь
+    setList(newList);
+    setFiltered(secondFiltered(newList));
+    
 }
 
 const handleEdit = (index) => {
-    let newName = promt("Новое имя:", list[index].useName)
-    let newAge = promt("Новый возраст:", list[index].userAge)
-    let newGender = prompt("Новый пол", list[index].userGender)
+    let newName = prompt("Новое имя:", list[index].userName);
+    let newAge = prompt("Новый возраст:", list[index].userAge);
+    let newGender = prompt("Новый пол", list[index].userGender);
 
-    if (!newName || !newAge || !newGender) return
+    if (!newName || !newAge || !newGender) return;
 
-    const updated = [...list]
+    const updated = [...list];
     updated[index]  = {
         userName: newName,
         userAge: Number(newAge),
         userGender: newGender
     }
-    setList(updated)
-    handleSearch()
+    setList(updated);
+    setFiltered(secondFiltered(updated));
+
 }
 
+
+const handleDelChk = () => {
+    if (checkIncludes.length === 0) {
+        alert('Нужно выбрать пользователей');
+        return;
+    }
+
+
+    const newList = list.filter((_, i) => !checkIncludes.includes(i));
+    setList(newList);
+    setFiltered(secondFiltered(newList));
+    setCheckIncludes([]);
+}
+
+const toggleCheckbox = (index) => {
+    if (checkIncludes.includes(index)){
+        setCheckIncludes(checkIncludes.filter (i => i !== index));
+    } else {
+        setCheckIncludes([...checkIncludes, index]);
+    }
+}
 
 
 /* Тут html */
@@ -108,39 +143,49 @@ const handleEdit = (index) => {
           </h1>
       </div>
       <div id="show" className=" flex justify-end w-[800px] m-auto mb-[15px] ">
-          <button id="show-search" className="rounded-full border p-1.5 w-25 hover:bg-[#8981d9] transition duration-300 ease-in-out">Добавить</button>
+          <button onClick={() => setShowForm(!showForm)} /* setShowForm(!showForm)} переключатель */ className="rounded-full border p-1.5 w-25 hover:bg-[#8981d9] transition duration-300 ease-in-out">Добавить</button>
       </div>
-      <div id="create-add" className="create hidden flex-col w-[800px] m-auto mb-[20px] p-[15px] font-medium opacity rounded-r-lg border border-#008a77-400 drop-shadow-xl"  > {/* <!-- bg-[#a5c8e3] --> */}
-          <form className="inpt-form" id="create-form">
-              <div className="grid grid-cols-6 grid-rows-1 mb-[10px]" >
-                  <input
+      {showForm && (
+        <div id="create-add" className="create flex-col w-[800px] m-auto mb-[20px] p-[15px] font-medium opacity rounded-r-lg border border-#008a77-400 drop-shadow-xl"  > {/* <!-- bg-[#a5c8e3] --> */}
+            <form className="inpt-form" id="create-form" onSubmit={handleAddPerson}> //onSubmit именно для form 
+                <div className="grid grid-cols-6 grid-rows-1 mb-[10px]" >
+                    <input
                     type="text"
                     name="add-name"
                     placeholder="ФИО"
                     className="add-name col-span-5 text-center border border-#008a77-400 rounded-full p-1  hover:bg-[#cfcfcf] transition duration-300 ease-in-out"
                     id="add-name"
-                     />
-                  <input
+                    value={addNameValue}
+                    onChange={(e) => setAddNameValue(e.target.value)}/>
+                    <input
                     type="number"
                     name="add-age"
                     placeholder="Возраст"
                     className="add-age border border-navy-600 text-center rounded-full p-1  hover:bg-[#cfcfcf] transition duration-300 ease-in-out ml-5"
                     id="add-age"
+                    value={addAgeValue}
+                    onChange={(e) => setAddAgeValue(e.target.value)}
                     />
-              </div>
-              <div className="inpt-select mb-[10px]">
-                  <label htmlFor="form-gender" className="ml-[5px]">Пол</label>
-                  <select name="add-gender" id="form-gender" className="add-gender border border-navy-600 rounded-full p-1 hover:bg-[#cfcfcf] transition duration-300 ease-in-out ml-10">
-                      <option value="male">Мужчины</option>
-                      <option value="female">Женщины</option>
-                      <option value="trans">Другие</option>
-                  </select>    
-              </div>
-              <div className="button-div flex items-center">
-                  <button className="rounded-full border p-1.5 w-25 hover:bg-[#8981d9] transition duration-300 ease-in-out" id="form-button" type="submit">Ввод</button>
-              </div> {/* <!-- type="submit" для отпрв --> */}
-          </form>
-      </div>
+                </div>
+                <div className="inpt-select mb-[10px]">
+                    <label htmlFor="form-gender" className="ml-[5px]">Пол</label>
+                    <select
+                    name="add-gender"
+                    id="form-gender"
+                    value={addGenderValue}
+                    onChange={(e) => setAddGenderValue(e.target.value)}
+                    className="add-gender border border-navy-600 rounded-full p-1 hover:bg-[#cfcfcf] transition duration-300 ease-in-out ml-10">
+                        <option value="male">Мужчины</option>
+                        <option value="female">Женщины</option>
+                        <option value="trans">Другие</option>
+                    </select>    
+                </div>
+                <div className="button-div flex items-center">
+                    <button className="rounded-full border p-1.5 w-25 hover:bg-[#8981d9] transition duration-300 ease-in-out" id="form-button" type="submit">Ввод</button>
+                </div> {/* <!-- type="submit" для отпрв --> */}
+            </form>
+          </div>
+        )}
       <div className="menu-list flex flex-col w-[800px] m-auto"> {/* <!-- -violet bg-[#9789e2] --> */}
           <div className="grid grid-cols-6 gap-1 mb-[15px]">
               <input
@@ -150,9 +195,10 @@ const handleEdit = (index) => {
                className="col-span-5 border hover:bg-[#cfcfcf] rounded-sm  transition duration-300 ease-in-out p-[3px]"
                value={searchNameValue}
                onChange={(e) => {
-                   setSearchNameValue(e.target.value)
-                   handleSearch()
-               }}
+                const newValue = e.target.value;
+                    setSearchNameValue(newValue);
+                    handleSearch(newValue, searchAgeValue, selectGenderValue);   
+                }}
                />
               <input
                type="number"
@@ -160,21 +206,37 @@ const handleEdit = (index) => {
                placeholder="По возрасту"
                className="border hover:bg-[#cfcfcf] rounded-sm  transition duration-300 ease-in-out  p-[3px]"
                value={searchAgeValue}
-               onChange={(e) => { /* onChange сбытие инпута остальное функция REACT e объект события */
-                   setSearchAgeValue(e.target.value)
-                   handleSearch()
-               }}
+               /* onChange сбытие инпута остальное функция REACT e объект события */
+               onChange={(e) => {
+                    const newValue = e.target.value;
+                    setSearchAgeValue(newValue);
+                    handleSearch(searchNameValue, newValue, selectGenderValue); 
+                }}
                />
           </div>
           <div className="flex justify-between mb-[10px]">
               <div className="">
-                  <select name="select-gender" id="select-gender" className="hover:bg-[#cfcfcf] transition duration-300 ease-in-out rounded-sm p-[5px]">
+                  <select
+                  name="select-gender"
+                  id="select-gender"
+                  className="hover:bg-[#cfcfcf] transition duration-300 ease-in-out rounded-sm p-[5px]"
+                  value={selectGenderValue}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    setSelectGenderValue(e.target.value);
+                    handleSearch(searchNameValue, searchAgeValue, newValue);   
+                  }}>
                       <option value="">Все</option>
                       <option value="male">Мужчины</option>
                       <option value="female">Женщины</option>
                       <option value="trans">Другие</option>
                   </select>
-                  <button id="delete-list" type="submit" className="hover:bg-[#cfcfcf] active:bg-[#433d61] border transition duration-300 ease-in-out rounded-sm bg-[#FCEBEB] hover:bg-[#cfcfcf] text-red-400 p-[5px]">Удалить выбранное</button>
+                  <button
+                    id="delete-list"
+                    type="submit"
+                    className="hover:bg-[#cfcfcf] active:bg-[#433d61] border transition duration-300 ease-in-out rounded-sm bg-[#FCEBEB] hover:bg-[#cfcfcf] text-red-400 p-[5px]"
+                    onClick={handleDelChk}
+                    >Удалить выбранное</button>
               </div>
               <div id="" className="">
                   <button id="" className="hover:bg-[#8981d9]  active:bg-[#8981d9]">⊞</button> {/* <!-- Найти иконку карточек фиол --> */}
@@ -186,10 +248,17 @@ const handleEdit = (index) => {
         <div id="result_card" className="list flex  justify-around"> {/* <!-- bg-[#dbdbf6] border-violet-200 --> */}
             <div id="result_text" className="grid grid-cols-3 gap-4">
                 {filtered.map((person, index) => (
-                    <div className="mb-[10px] p-[10px] border rounded-r-lg hover:bg-[#e0e0e0]  transition duration-300 ease-in-out shadow-md"  id="result-card-daddy">
+                    <div key={index} className="mb-[10px] p-[10px] border rounded-r-lg hover:bg-[#e0e0e0]  transition duration-300 ease-in-out shadow-md"  id="result-card-daddy">
                     <div className="flex flex-row mt-[5px]" id="result-card-skin">
                         <div id="result-skin-chkbox" className="flex flex-col-reverse justify-between mr-[10px] ml-[10px]">
-                            <input type="checkbox" id="result-chbbox" className="delete-select mb-10 accent-[#8981d9]" value="${index}" />
+                            <input
+                                type="checkbox"
+                                id="result-chbbox"
+                                className="delete-select mb-10 accent-[#8981d9]"
+                                value={index}
+                                checked={checkIncludes.includes(index)}
+                                onChange={() => toggleCheckbox(index)}
+                                />
                         </div>
                         <div id="result-skin-data" className="flex flex-col mb-[10px]">
                             <p className="font-medium text-gray-950 dark:text-gray">
@@ -204,8 +273,8 @@ const handleEdit = (index) => {
                         <span  id="result" /> 
                     </div>
                     <div className="flex flex-row  mb-[10px]">
-                        <button className="rounded-full border p-1.5 w-25 bg-white hover:bg-[#8981d9] transition duration-300 ease-in-out ml-5 mr-5 w-30" onclick="editList(${index})">Редактировать</button>
-                        <button className="rounded-full border p-1.5 w-25 bg-[#FCEBEB] hover:bg-[#f2caca] text-red-400 transition duration-300 ease-in-ou" onclick="deleteList(${index})">Удалить</button>
+                        <button onClick={() => handleEdit(index)} className="rounded-full border p-1.5 w-25 bg-white hover:bg-[#8981d9] transition duration-300 ease-in-out ml-5 mr-5 w-30">Редактировать</button>
+                        <button onClick={() => handleDelete(index)}className="rounded-full border p-1.5 w-25 bg-[#FCEBEB] hover:bg-[#f2caca] text-red-400 transition duration-300 ease-in-ou">Удалить</button>
                     </div>
                     </div>
                 ))}
