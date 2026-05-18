@@ -18,7 +18,7 @@ function App() {
   {userName:"Dick", userAge: 35, userGender:"male" }]);
 
   // Это у нас
-  const [filtered, setFiltered] = useState ([...list]); // это у нас для осн массива
+  const [filtered, setFiltered] = useState ([...list]); // это у нас для осн массива и то что показывается на экране
 
 
  /*  // 1 этап, подключ к html через id или как уже это описать в React  */
@@ -70,7 +70,7 @@ const handleAddPerson = (e) => {
 
     const newPerson = {
         userName: addNameValue,
-        userAge: Number (addAgeValue),
+        userAge: Number(addAgeValue),
         userGender: addGenderValue
     };
     const newList = [...list, newPerson]; // добавл в список
@@ -113,23 +113,23 @@ const handleEdit = (index) => {
 
 
 const handleDelChk = () => {
-    if (checkIncludes.length === 0) {
+    if (checkIncludes.length === 0) { // 
         alert('Нужно выбрать пользователей');
         return;
     }
 
 
-    const newList = list.filter((_, i) => !checkIncludes.includes(i));
-    setList(newList);
-    setFiltered(secondFiltered(newList));
-    setCheckIncludes([]);
+    const newList = list.filter((_, i) => !checkIncludes.includes(i)); // !checkIncludes.includes(i)) - не в выбранных
+    setList(newList); // сохр новый список без удаленных
+    setFiltered(secondFiltered(newList)); // обновляется список
+    setCheckIncludes([]); // убирает галочки
 }
 
-const toggleCheckbox = (index) => {
-    if (checkIncludes.includes(index)){
-        setCheckIncludes(checkIncludes.filter (i => i !== index));
+const toggleCheckbox = (index) => { //вкл выкл переключатель
+    if (checkIncludes.includes(index)){ //index карточка которую выбрали
+        setCheckIncludes(checkIncludes.filter (i => i !== index)); // удаление индекса из массива и создание нового массива
     } else {
-        setCheckIncludes([...checkIncludes, index]);
+        setCheckIncludes([...checkIncludes, index]); // добавляет индекс в массив
     }
 }
 
@@ -137,15 +137,15 @@ const toggleCheckbox = (index) => {
 /* Тут html */
   return (
     <div className="container max-w-[1140px] mr-auto ml-auto p-auto "> {/* <!-- w-[1140px]  --> */}
-      <div className="zagolovok mb-[15px]">
-          <h1 className="text-3xl font-bold underline mt-[10px] text-center "> {/* <!-- flex items-center justify-center  --> */}
+        <div className="zagolovok mb-[15px]">
+            <h1 className="text-3xl font-bold underline mt-[10px] text-center "> {/* <!-- flex items-center justify-center  --> */}
               База данных пользователей 
-          </h1>
-      </div>
-      <div id="show" className=" flex justify-end w-[800px] m-auto mb-[15px] ">
-          <button onClick={() => setShowForm(!showForm)} /* setShowForm(!showForm)} переключатель */ className="rounded-full border p-1.5 w-25 hover:bg-[#8981d9] transition duration-300 ease-in-out">Добавить</button>
-      </div>
-      {showForm && (
+            </h1>
+        </div>
+        <div id="show" className=" flex justify-end w-[800px] m-auto mb-[15px] ">
+            <button onClick={() => setShowForm(!showForm)} /* setShowForm(!showForm)} переключатель */ className="rounded-full border p-1.5 w-25 hover:bg-[#8981d9] transition duration-300 ease-in-out">Добавить</button>
+        </div>
+        {showForm && (
         <div id="create-add" className="create flex-col w-[800px] m-auto mb-[20px] p-[15px] font-medium opacity rounded-r-lg border border-#008a77-400 drop-shadow-xl"  > {/* <!-- bg-[#a5c8e3] --> */}
             <form className="inpt-form" id="create-form" onSubmit={handleAddPerson}> //onSubmit именно для form 
                 <div className="grid grid-cols-6 grid-rows-1 mb-[10px]" >
@@ -186,64 +186,64 @@ const toggleCheckbox = (index) => {
             </form>
           </div>
         )}
-      <div className="menu-list flex flex-col w-[800px] m-auto"> {/* <!-- -violet bg-[#9789e2] --> */}
-          <div className="grid grid-cols-6 gap-1 mb-[15px]">
-              <input
-               type="text"
-               id="search-name"
-               placeholder="Поиск по имени"
-               className="col-span-5 border hover:bg-[#cfcfcf] rounded-sm  transition duration-300 ease-in-out p-[3px]"
-               value={searchNameValue}
-               onChange={(e) => {
+        <div className="menu-list flex flex-col w-[800px] m-auto"> {/* <!-- -violet bg-[#9789e2] --> */}
+            <div className="grid grid-cols-6 gap-1 mb-[15px]">
+                <input
+                type="text"
+                id="search-name"
+                placeholder="Поиск по имени"
+                className="col-span-5 border hover:bg-[#cfcfcf] rounded-sm  transition duration-300 ease-in-out p-[3px]"
+                value={searchNameValue}
+                onChange={(e) => {
                 const newValue = e.target.value;
                     setSearchNameValue(newValue);
                     handleSearch(newValue, searchAgeValue, selectGenderValue);   
                 }}
-               />
+                />
               <input
-               type="number"
-               id="search-age"
-               placeholder="По возрасту"
-               className="border hover:bg-[#cfcfcf] rounded-sm  transition duration-300 ease-in-out  p-[3px]"
-               value={searchAgeValue}
-               /* onChange сбытие инпута остальное функция REACT e объект события */
-               onChange={(e) => {
+                type="number"
+                id="search-age"
+                placeholder="По возрасту"
+                className="border hover:bg-[#cfcfcf] rounded-sm  transition duration-300 ease-in-out  p-[3px]"
+                value={searchAgeValue}
+                /* onChange сбытие инпута остальное функция REACT e объект события */
+                onChange={(e) => {
                     const newValue = e.target.value;
                     setSearchAgeValue(newValue);
                     handleSearch(searchNameValue, newValue, selectGenderValue); 
                 }}
-               />
-          </div>
-          <div className="flex justify-between mb-[10px]">
-              <div className="">
-                  <select
-                  name="select-gender"
-                  id="select-gender"
-                  className="hover:bg-[#cfcfcf] transition duration-300 ease-in-out rounded-sm p-[5px]"
-                  value={selectGenderValue}
-                  onChange={(e) => {
-                    const newValue = e.target.value;
-                    setSelectGenderValue(e.target.value);
-                    handleSearch(searchNameValue, searchAgeValue, newValue);   
+                />
+            </div>
+            <div className="flex justify-between mb-[10px]">
+                <div className="">
+                    <select
+                    name="select-gender"
+                    id="select-gender"
+                    className="hover:bg-[#cfcfcf] transition duration-300 ease-in-out rounded-sm p-[5px]"
+                    value={selectGenderValue}
+                    onChange={(e) => {
+                        const newValue = e.target.value;
+                        setSelectGenderValue(e.target.value);
+                        handleSearch(searchNameValue, searchAgeValue, newValue);   
                   }}>
-                      <option value="">Все</option>
-                      <option value="male">Мужчины</option>
-                      <option value="female">Женщины</option>
-                      <option value="trans">Другие</option>
-                  </select>
-                  <button
+                        <option value="">Все</option>
+                        <option value="male">Мужчины</option>
+                        <option value="female">Женщины</option>
+                        <option value="trans">Другие</option>
+                    </select>
+                    <button
                     id="delete-list"
                     type="submit"
                     className="hover:bg-[#cfcfcf] active:bg-[#433d61] border transition duration-300 ease-in-out rounded-sm bg-[#FCEBEB] hover:bg-[#cfcfcf] text-red-400 p-[5px]"
                     onClick={handleDelChk}
                     >Удалить выбранное</button>
-              </div>
-              <div id="" className="">
-                  <button id="" className="hover:bg-[#8981d9]  active:bg-[#8981d9]">⊞</button> {/* <!-- Найти иконку карточек фиол --> */}
-                  <button id="" className="hover:bg-[#8981d9] active:bg-[#8981d9]">☰</button>{/*  <!-- Иконка списка фиолетовый --> */}
-              </div>
-          </div>
-      </div>
+                </div>
+                <div id="" className="">
+                    <button id="" className="hover:bg-[#8981d9]  active:bg-[#8981d9]">⊞</button> {/* <!-- Найти иконку карточек фиол --> */}
+                    <button id="" className="hover:bg-[#8981d9] active:bg-[#8981d9]">☰</button>{/*  <!-- Иконка списка фиолетовый --> */}
+                </div>
+            </div>
+        </div>
 
         <div id="result_card" className="list flex  justify-around"> {/* <!-- bg-[#dbdbf6] border-violet-200 --> */}
             <div id="result_text" className="grid grid-cols-3 gap-4">
@@ -280,10 +280,39 @@ const toggleCheckbox = (index) => {
                 ))}
             </div>
         </div>
-        <div id="result_table" className="list flex  justify-around"> {/* <!-- bg-[#dbdbf6] border-violet-200 --> */}
-          <div id="result_text" className="grid grid-cols-3 gap-4"></div> 
-      </div>
-      <footer className="footer h-20" id="footer"></footer>
+        <div id="result_table" className="list flex justify-around flex-col w-[800px] m-auto ">{/*  bg-[#dbdbf6] border-violet-200 */}
+
+            <table >
+                <thead>
+                    <th></th>
+                    <th>Имя</th>
+                    <th>Возраст</th>
+                    <th>Пол</th>
+                </thead>
+                {filtered.map((person, index) => (
+                <tbody >
+                    <tr className='hover:bg-[#e0e0e0]  transition duration-300 ease-in-out'>
+                        <td >
+                            <input
+                                type="checkbox"
+                                id="result-chbbox"
+                                className="delete-select accent-[#8981d9]"
+                                value={index}
+                                checked={checkIncludes.includes(index)}
+                                onChange={() => toggleCheckbox(index)}
+                                />
+                        </td>
+                        <td>{person.userName}</td>
+                        <td> возраст - {person.userAge}</td>
+                        <td>{person.userGender}</td>
+                        <td><button onClick={() => handleEdit(index)} className="rounded-full border p-1.5 w-25 bg-white hover:bg-[#8981d9] transition duration-300 ease-in-out ml-5 mr-5 w-30">Редактировать</button></td>
+                        <td><button onClick={() => handleDelete(index)}className="rounded-full border p-1.5 w-25 bg-[#FCEBEB] hover:bg-[#f2caca] text-red-400 transition duration-300 ease-in-ou">Удалить</button></td>
+                    </tr>
+                </tbody>         ))}
+            </table>
+
+        </div>
+        <footer className="footer h-20" id="footer"></footer>
     </div>
 
 
